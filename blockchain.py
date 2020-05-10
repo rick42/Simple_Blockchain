@@ -17,7 +17,6 @@ MINING_REWARD = 10
 
 print(__name__)
 
-
 class Blockchain:
     """The Blockchain class manages the chain of blocks as well as open transactions and the node on which it's running.
 
@@ -29,8 +28,8 @@ class Blockchain:
 
     def __init__(self, public_key, node_id):
         """The constructor of the Blockchain class."""
-        # Our starting block for the blockchain
-        genesis_block = Block(0, '', [], 100, 0)
+        # Our starting block for the blockchain, bits=0x1f0fffff
+        genesis_block = Block(0, '', [], 100, 521142271)
         # Initializing our (empty) blockchain list
         self.chain = [genesis_block]
         # Unhandled transactions
@@ -70,7 +69,7 @@ class Blockchain:
                     converted_tx = [Transaction(
                         tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']]
                     updated_block = Block(
-                        block['index'], block['previous_hash'], converted_tx, block['proof'], block['timestamp'])
+                        block['index'], block['previous_hash'], converted_tx, block['proof'], block['bits'], block['timestamp'])
                     updated_blockchain.append(updated_block)
                 self.chain = updated_blockchain
                 open_transactions = json.loads(file_content[1][:-1])
@@ -93,7 +92,7 @@ class Blockchain:
         try:
             with open('blockchain-{}.txt'.format(self.node_id), mode='w') as f:
                 saveable_chain = [block.__dict__ for block in [Block(block_el.index, block_el.previous_hash, [
-                    tx.__dict__ for tx in block_el.transactions], block_el.proof, block_el.timestamp) for block_el in self.__chain]]
+                    tx.__dict__ for tx in block_el.transactions], block_el.proof, block_el.bits, block_el.timestamp) for block_el in self.__chain]]
                 f.write(json.dumps(saveable_chain))
                 f.write('\n')
                 saveable_tx = [tx.__dict__ for tx in self.__open_transactions]
@@ -110,11 +109,12 @@ class Blockchain:
 
     def proof_of_work(self):
         """Generate a proof of work for the open transactions, the hash of the previous block and a random number (which is guessed until it fits)."""
-        last_block = self.__chain[-1]
-        last_hash = hash_block(last_block)
+        # last_block = self.__chain[-1]
+        # last_hash = hash_block(last_block)
+        # bits = last_block.bits
         proof = 0
         # Try different PoW numbers and return the first valid one
-        while not Verification.valid_proof(self.__open_transactions, last_hash, proof):
+        while not Verification.valid_proof(self.__open_transactions, last_hash, proof, bits):
             proof += 1
         return proof
 
@@ -199,6 +199,19 @@ class Blockchain:
         last_block = self.__chain[-1]
         # Hash the last block (=> to be able to compare it to the stored hash value)
         hashed_block = hash_block(last_block)
+        
+        bits = last_block.bits
+        #update every 5 blocks for 1 block every 60 seconds
+        print(last_block.index + 1)
+        blocks_to_update= 5         
+        desired_time_block = 60.0
+        if ((last_block.index + 1) %  blocks_to_update) == 0:
+            first_block_secs = self.__chain[-6].timestamp
+            last_block_secs = self.__chain[-1].timestamp 
+            time_span_secs = first_block_secs - last_block_secs
+            avg_time_block= time_span_secs / blocks_to_update
+            bits =  bits * (avg_time_block / desired_time_block)
+
         proof = self.proof_of_work()
         # Miners should be rewarded, so let's create a reward transaction
         # reward_transaction = {
@@ -216,7 +229,7 @@ class Blockchain:
                 return None
         copied_transactions.append(reward_transaction)
         block = Block(len(self.__chain), hashed_block,
-                      copied_transactions, proof)
+                      copied_transactions, proof, bits)
         self.__chain.append(block)
         self.__open_transactions = []
         self.save_data()
@@ -242,14 +255,14 @@ class Blockchain:
             tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']]
         # Validate the proof of work of the block and store the result (True or False) in a variable
         proof_is_valid = Verification.valid_proof(
-            transactions[:-1], block['previous_hash'], block['proof'])
+            transactions[:-1], block['previous_hash'], block['proof'], block['bits'])
         # Check if previous_hash stored in the block is equal to the local blockchain's last block's hash and store the result in a block
         hashes_match = hash_block(self.chain[-1]) == block['previous_hash']
         if not proof_is_valid or not hashes_match:
             return False
         # Create a Block object
         converted_block = Block(
-            block['index'], block['previous_hash'], transactions, block['proof'], block['timestamp'])
+            block['index'], block['previous_hash'], transactions, block['proof'], block['bits'], block['timestamp'])
         self.__chain.append(converted_block)
         stored_transactions = self.__open_transactions[:]
         # Check which open transactions were included in the received block and remove them
@@ -279,7 +292,7 @@ class Blockchain:
                 # Convert the dictionary list to a list of block AND transaction objects
                 node_chain = [Block(block['index'], block['previous_hash'], [Transaction(
                     tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']],
-                                    block['proof'], block['timestamp']) for block in node_chain]
+                                    block['proof'],  block['bits'], block['timestamp']) for block in node_chain]
                 node_chain_length = len(node_chain)
                 local_chain_length = len(winner_chain)
                 # Store the received chain as the current winner chain if it's longer AND valid

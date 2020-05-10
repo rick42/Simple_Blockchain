@@ -6,7 +6,7 @@ from wallet import Wallet
 class Verification:
     """A helper class which offer various static and class-based verification and validation methods."""
     @staticmethod
-    def valid_proof(transactions, last_hash, proof):
+    def valid_proof(transactions, last_hash, proof, bits):
         """Validate a proof of work number and see if it solves the puzzle algorithm (two leading 0s)
 
         Arguments:
@@ -21,7 +21,20 @@ class Verification:
         guess_hash = hash_string_256(guess)
         # Only a hash (which is based on the above inputs) which starts with two 0s is treated as valid
         # This condition is of course defined by you. You could also require 10 leading 0s - this would take significantly longer (and this allows you to control the speed at which new blocks can be added)
-        return guess_hash[0:2] == '00'
+    #    bit_hex=hex(bit)
+    #    shift_hex = bit_hex[0:4]
+    #    shift_int = int(shift_hex, 16)
+    #    value_hex = '0x%s' % bit_hex[4:]
+    #    value_int = int(value_hex,16)
+    #    target= value_int * 2 **(8 * (shift_int-3))
+    #    hex_target=hex(value_int)
+        # removes the last 6 bits to determine shift 
+        shift= bits >> 24 
+        value = bits & 0x007fffff
+        value <<= 8 * (shift - 3)
+        target= hex(value)
+       
+        return guess_hash < target
         
     @classmethod
     def verify_chain(cls, blockchain):
@@ -31,7 +44,7 @@ class Verification:
                 continue
             if block.previous_hash != hash_block(blockchain[index - 1]):
                 return False
-            if not cls.valid_proof(block.transactions[:-1], block.previous_hash, block.proof):
+            if not cls.valid_proof(block.transactions[:-1], block.previous_hash, block.proof, block.bits):
                 print('Proof of work is invalid')
                 return False
         return True
