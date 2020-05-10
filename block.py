@@ -14,11 +14,7 @@ class Block(Printable):
         :bits: represents the target for difficulty. Stored as decimal 
         :difficulty: scaled difficulty compared to gensis block with 1.0
     """
-<<<<<<< HEAD
-    def __init__(self, index, previous_hash, transactions, proof, bits, time=time()):
-=======
-    def __init__(self, index, previous_hash, transactions, proof, time=None):
->>>>>>> master
+    def __init__(self, index, previous_hash, transactions, proof, bits, time=None):
         self.index = index
         self.previous_hash = previous_hash
         if time != None:
