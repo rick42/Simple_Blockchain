@@ -8,6 +8,16 @@ app = Flask(__name__)
 CORS(app)
 
 
+
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    """ shutdown() turns off the flask server when called """
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+    return 'Server shutting down...'
+
 @app.route('/', methods=['GET'])
 def get_node_ui():
     return send_from_directory('ui', 'node.html')
