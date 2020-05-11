@@ -11,6 +11,7 @@ from utility.verification import Verification
 from block import Block
 from transaction import Transaction
 from wallet import Wallet
+from difficulty import Difficulty
 
 # The reward we give to miners (for creating a new block)
 MINING_REWARD = 10
@@ -28,8 +29,8 @@ class Blockchain:
 
     def __init__(self, public_key, node_id):
         """The constructor of the Blockchain class."""
-        # Our starting block for the blockchain, bits=0x1f0fffff
-        genesis_block = Block(0, '', [], 100, 521142271)
+        # Our starting block for the blockchain, bits=0x210fffff
+        genesis_block = Block(0, '', [], 100, 554696703)
         # Initializing our (empty) blockchain list
         self.chain = [genesis_block]
         # Unhandled transactions
@@ -109,12 +110,12 @@ class Blockchain:
 
     def proof_of_work(self):
         """Generate a proof of work for the open transactions, the hash of the previous block and a random number (which is guessed until it fits)."""
-        # last_block = self.__chain[-1]
-        # last_hash = hash_block(last_block)
-        # bits = last_block.bits
+        last_block = self.__chain[-1]
+        hashed_block = hash_block(last_block)
+        bits = last_block.bits
         proof = 0
         # Try different PoW numbers and return the first valid one
-        while not Verification.valid_proof(self.__open_transactions, last_hash, proof, bits):
+        while not Verification.valid_proof(self.__open_transactions, hashed_block, proof, bits):
             proof += 1
         return proof
 
@@ -199,18 +200,8 @@ class Blockchain:
         last_block = self.__chain[-1]
         # Hash the last block (=> to be able to compare it to the stored hash value)
         hashed_block = hash_block(last_block)
-        
-        bits = last_block.bits
-        #update every 5 blocks for 1 block every 60 seconds
-        print(last_block.index + 1)
-        blocks_to_update= 5         
-        desired_time_block = 60.0
-        if ((last_block.index + 1) %  blocks_to_update) == 0:
-            first_block_secs = self.__chain[-6].timestamp
-            last_block_secs = self.__chain[-1].timestamp 
-            time_span_secs = first_block_secs - last_block_secs
-            avg_time_block= time_span_secs / blocks_to_update
-            bits =  bits * (avg_time_block / desired_time_block)
+         
+        bits = Difficulty.update_difficulty(self.__chain, last_block)
 
         proof = self.proof_of_work()
         # Miners should be rewarded, so let's create a reward transaction
@@ -228,9 +219,12 @@ class Blockchain:
             if not Wallet.verify_transaction(tx):
                 return None
         copied_transactions.append(reward_transaction)
+
         block = Block(len(self.__chain), hashed_block,
                       copied_transactions, proof, bits)
+
         self.__chain.append(block)
+
         self.__open_transactions = []
         self.save_data()
         for node in self.__peer_nodes:
