@@ -34,7 +34,10 @@ class Difficulty:
 
     def update_difficulty(Blockchain, block, blocks_to_update = 5, desired_time_block = 20.0 ):
         """Updates the difficulty every x blocks by averaging
-            past block mining time and comparing to desired time"""
+            past block mining time and comparing to desired time
+            desired_time: Desired time in seconds to mine a block
+            blocks_to_update: update difficulty after every x blocks 
+            """
 
         bits = block.bits
         target = int(Difficulty.bits_to_target(bits), 16)
