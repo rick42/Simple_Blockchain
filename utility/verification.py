@@ -2,11 +2,12 @@
 
 from utility.hash_util import hash_string_256, hash_block
 from wallet import Wallet
+from difficulty import Difficulty
 
 class Verification:
     """A helper class which offer various static and class-based verification and validation methods."""
     @staticmethod
-    def valid_proof(transactions, last_hash, proof):
+    def valid_proof(transactions, last_hash, proof, bits):
         """Validate a proof of work number and see if it solves the puzzle algorithm (two leading 0s)
 
         Arguments:
@@ -18,10 +19,12 @@ class Verification:
         guess = (str([tx.to_ordered_dict() for tx in transactions]) + str(last_hash) + str(proof)).encode()
         # Hash the string
         # IMPORTANT: This is NOT the same hash as will be stored in the previous_hash. It's a not a block's hash. It's only used for the proof-of-work algorithm.
-        guess_hash = hash_string_256(guess)
-        # Only a hash (which is based on the above inputs) which starts with two 0s is treated as valid
-        # This condition is of course defined by you. You could also require 10 leading 0s - this would take significantly longer (and this allows you to control the speed at which new blocks can be added)
-        return guess_hash[0:2] == '00'
+        guess_hash = '0x%s' % hash_string_256(guess)
+        # Only a hash (which is based on the above inputs) is less than target is treated as valid
+        # print(guess_hash)
+        # print(Difficulty.bits_to_target(bits))
+        # print(guess_hash < Difficulty.bits_to_target(bits))
+        return guess_hash < Difficulty.bits_to_target(bits)
         
     @classmethod
     def verify_chain(cls, blockchain):
@@ -31,7 +34,7 @@ class Verification:
                 continue
             if block.previous_hash != hash_block(blockchain[index - 1]):
                 return False
-            if not cls.valid_proof(block.transactions[:-1], block.previous_hash, block.proof):
+            if not cls.valid_proof(block.transactions[:-1], block.previous_hash, block.proof, block.bits):
                 print('Proof of work is invalid')
                 return False
         return True
