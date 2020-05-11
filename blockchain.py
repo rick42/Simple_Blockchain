@@ -112,12 +112,12 @@ class Blockchain:
         """Generate a proof of work for the open transactions, the hash of the previous block and a random number (which is guessed until it fits)."""
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
-        bits = last_block.bits
+        bits = Difficulty.update_difficulty(self.__chain, last_block)
         proof = 0
         # Try different PoW numbers and return the first valid one
         while not Verification.valid_proof(self.__open_transactions, hashed_block, proof, bits):
             proof += 1
-        return proof
+        return  proof, bits
 
     def get_balance(self, sender=None):
         """Calculate and return the balance for a participant.
@@ -200,10 +200,8 @@ class Blockchain:
         last_block = self.__chain[-1]
         # Hash the last block (=> to be able to compare it to the stored hash value)
         hashed_block = hash_block(last_block)
-         
-        bits = Difficulty.update_difficulty(self.__chain, last_block)
 
-        proof = self.proof_of_work()
+        proof, bits = self.proof_of_work()
         # Miners should be rewarded, so let's create a reward transaction
         # reward_transaction = {
         #     'sender': 'MINING',
