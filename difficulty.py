@@ -4,11 +4,12 @@ class Difficulty:
     def bits_to_target(bits):
         """converts a decimal number bit and converts it
         to the 32 byte hex target which dictates difficulty""" 
+        bits= int(bits , 16)
         shift = bits >> 24 
         value = bits & 0x007fffff
         value <<= 8 * (shift - 3)            
         target = hex(value)
-        target = Difficulty.pad_leading_zeros(target)
+        target = Difficulty.pad_lead_zeros(target)
         return target    
 
     def target_to_bits(target):
@@ -18,18 +19,18 @@ class Difficulty:
         value |= size << 24 
         return value
 
-    def pad_leading_zeros(hex_str):
+    def pad_lead_zeros(hex_str):
         hex_num_chars = hex_str[2:-1]
         num_zeros_needed = 64 - len(hex_num_chars)
         padded_hex_str = '0x%s%s' % ('0' * num_zeros_needed, hex_num_chars)
         return padded_hex_str
 
-    # def bits_to_difficulty(bits, blockchain):
-    #     """Finds the difficulty in proportion to the effort to mine the first blocks"""
-    #     genesis_bits = blockchain[0].bit
-    #     target = bits_to_target(bits)
-    #     difficulty =  genesis_target / float(target)
-    #     return difficulty
+    def bits_to_difficulty(bits, genesis_bits):
+        """Finds the difficulty in proportion to the effort to mine the first blocks"""
+        genesis_target =  bits_to_target(gensis_bits)
+        target = bits_to_target(bits)
+        difficulty =  genesis_target / float(target)
+        return difficulty
 
     def update_difficulty(Blockchain, block, blocks_to_update = 5, desired_time_block = 20.0 ):
         """Updates the difficulty every x blocks by averaging
@@ -44,7 +45,7 @@ class Difficulty:
             time_span_secs = last_block_secs - first_block_secs 
             avg_time_block= time_span_secs / (blocks_to_update - 1)
             new_target =  target * (avg_time_block / desired_time_block)
-            bits = Difficulty.target_to_bits(int(new_target))
+            bits = hex(Difficulty.target_to_bits(int(new_target)))
             
         elif ((block.index + 1) %  blocks_to_update) == 0:
             first_block_secs = Blockchain[-1 * (blocks_to_update)].timestamp
@@ -52,7 +53,7 @@ class Difficulty:
             time_span_secs = last_block_secs - first_block_secs 
             avg_time_block= time_span_secs / blocks_to_update
             new_target  = target * (avg_time_block / desired_time_block)
-            bits = Difficulty.target_to_bits(int(new_target))
+            bits = hex(Difficulty.target_to_bits(int(new_target)))
         
         return bits
     
