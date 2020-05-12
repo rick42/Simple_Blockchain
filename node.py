@@ -196,6 +196,9 @@ def mine():
     if blockchain.resolve_conflicts:
         response = {'message': 'Resolve conflicts first, block not added!'}
         return jsonify(response), 409
+    if blockchain.is_mining:
+        response = {'message': 'Mining already in progress, block not added!'}
+        return jsonify(response), 409
     block = blockchain.mine_block()
     if block != None:
         dict_block = block.__dict__.copy()
