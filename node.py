@@ -300,6 +300,5 @@ if __name__ == '__main__':
     port = args.port
     hash_rate = args.hashrate
     wallet = Wallet(port)
-    blockchain = Blockchain(wallet.public_key, port)
-    blockchain.hash_rate = hash_rate
+    blockchain = Blockchain(wallet.public_key, port, hash_rate)
     app.run(host='0.0.0.0', port=port)

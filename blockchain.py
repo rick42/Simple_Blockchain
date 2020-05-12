@@ -120,6 +120,7 @@ class Blockchain:
 
         # Try different PoW numbers and return the first valid one
         while not Verification.valid_proof(self.__open_transactions, hashed_block, proof, bits):
+            #print('proof = ', proof)
             if self.hash_rate != None:
                 time.sleep(1/self.hash_rate)
             proof += 1
