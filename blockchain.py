@@ -30,8 +30,8 @@ class Blockchain:
 
     def __init__(self, public_key, node_id, hash_rate=None):
         """The constructor of the Blockchain class."""
-        # Our starting block for the blockchain, bits=0x2090000f or 546308111
-        genesis_block = Block(0, '', [], 100, '0x2090000f' )
+        # Our starting genesis block for the blockchain, bits=0x20800000
+        genesis_block = Block(0, '', [], 100, '0x20800000' )
         # Initializing our (empty) blockchain list
         self.chain = [genesis_block]
         # Unhandled transactions
