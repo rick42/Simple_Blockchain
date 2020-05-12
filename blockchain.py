@@ -1,5 +1,6 @@
 from functools import reduce
 import hashlib as hl
+import time
 
 import json
 import pickle
@@ -27,10 +28,10 @@ class Blockchain:
         :hosting_node: The connected node (which runs the blockchain).
     """
 
-    def __init__(self, public_key, node_id):
+    def __init__(self, public_key, node_id, hash_rate=None):
         """The constructor of the Blockchain class."""
-        # Our starting block for the blockchain, bits=0x210fffff or 554696703
-        genesis_block = Block(0, '', [], 100, '0x210fffff' )
+        # Our starting block for the blockchain, bits=0x20ffffff or 553648127
+        genesis_block = Block(0, '', [], 100, '0x20ffffff' )
         # Initializing our (empty) blockchain list
         self.chain = [genesis_block]
         # Unhandled transactions
@@ -40,6 +41,7 @@ class Blockchain:
         self.node_id = node_id
         self.resolve_conflicts = False
         self.load_data()
+        self.hash_rate = hash_rate
 
     # This turns the chain attribute into a property with a getter (the method below) and a setter (@chain.setter)
     @property
@@ -114,8 +116,12 @@ class Blockchain:
         hashed_block = hash_block(last_block)
         bits = Difficulty.update_difficulty(self.__chain, last_block)
         proof = 0
+        print('hr = ',self.hash_rate)
         # Try different PoW numbers and return the first valid one
         while not Verification.valid_proof(self.__open_transactions, hashed_block, proof, bits):
+            if self.hash_rate != None:
+                time.sleep(1/self.hash_rate)
+            print('proof = ', proof)
             proof += 1
         return  proof, bits
 

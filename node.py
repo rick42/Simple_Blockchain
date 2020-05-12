@@ -33,7 +33,7 @@ def create_keys():
     wallet.create_keys()
     if wallet.save_keys():
         global blockchain
-        blockchain = Blockchain(wallet.public_key, port)
+        blockchain = Blockchain(wallet.public_key, port, hash_rate)
         response = {
             'public_key': wallet.public_key,
             'private_key': wallet.private_key,
@@ -51,7 +51,7 @@ def create_keys():
 def load_keys():
     if wallet.load_keys():
         global blockchain
-        blockchain = Blockchain(wallet.public_key, port)
+        blockchain = Blockchain(wallet.public_key, port, hash_rate)
         response = {
             'public_key': wallet.public_key,
             'private_key': wallet.private_key,
@@ -136,6 +136,16 @@ def broadcast_block():
     else: 
         response = {'message': 'Blockchain seems to be shorter, block not added'}
         return jsonify(response), 409
+
+
+@app.route('/test_resolve', methods=['POST'])
+def test_resolve():
+    ''' This route is for testing purposes '''
+    blockchain.resolve_conflicts = True
+    response = {
+        'message': 'blockchain.resolve_conflict set to True'
+    }
+    return jsonify(response), 200
 
 
 @app.route('/transaction', methods=['POST'])
@@ -282,8 +292,11 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument('-p', '--port', type=int, default=5000)
+    parser.add_argument('-r', '--hashrate', type=int)
     args = parser.parse_args()
     port = args.port
+    hash_rate = args.hashrate
     wallet = Wallet(port)
     blockchain = Blockchain(wallet.public_key, port)
+    blockchain.hash_rate = hash_rate
     app.run(host='0.0.0.0', port=port)
