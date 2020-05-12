@@ -42,6 +42,7 @@ class Blockchain:
         self.resolve_conflicts = False
         self.load_data()
         self.hash_rate = hash_rate
+        self.is_mining = False
 
     # This turns the chain attribute into a property with a getter (the method below) and a setter (@chain.setter)
     @property
@@ -116,13 +117,13 @@ class Blockchain:
         hashed_block = hash_block(last_block)
         bits = Difficulty.update_difficulty(self.__chain, last_block)
         proof = 0
-       
+
         # Try different PoW numbers and return the first valid one
         while not Verification.valid_proof(self.__open_transactions, hashed_block, proof, bits):
             if self.hash_rate != None:
                 time.sleep(1/self.hash_rate)
-            print('proof = ', proof)
             proof += 1
+        print('proof = ', proof)
         return  proof, bits
 
     def get_balance(self, sender=None):
@@ -200,6 +201,8 @@ class Blockchain:
 
     def mine_block(self):
         """Create a new block and add open transactions to it."""
+        self.is_mining = True
+
         # Fetch the currently last block of the blockchain
         if self.public_key == None:
             return None
@@ -244,6 +247,8 @@ class Blockchain:
                     self.resolve_conflicts = True
             except requests.exceptions.ConnectionError:
                 continue
+        
+        self.is_mining = False
         return block
 
     def add_block(self, block):
