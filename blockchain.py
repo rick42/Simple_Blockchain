@@ -30,8 +30,8 @@ class Blockchain:
 
     def __init__(self, public_key, node_id, hash_rate=None):
         """The constructor of the Blockchain class."""
-        # Our starting block for the blockchain, bits=0x20ffffff or 553648127
-        genesis_block = Block(0, '', [], 100, '0x20ffffff' )
+        # Our starting genesis block for the blockchain, bits=0x20800000
+        genesis_block = Block(0, '', [], 100, '0x20800000' )
         # Initializing our (empty) blockchain list
         self.chain = [genesis_block]
         # Unhandled transactions
@@ -124,8 +124,10 @@ class Blockchain:
             if self.hash_rate != None:
                 time.sleep(1/self.hash_rate)
             proof += 1
-        print('proof = ', proof)
+        print('Proof    :', proof)
+
         return  proof, bits
+        
 
     def get_balance(self, sender=None):
         """Calculate and return the balance for a participant.
@@ -140,12 +142,16 @@ class Blockchain:
         # This fetches sent amounts of transactions that were already included in blocks of the blockchain
         tx_sender = [[tx.amount for tx in block.transactions
                       if tx.sender == participant] for block in self.__chain]
+
         # Fetch a list of all sent coin amounts for the given person (empty lists are returned if the person was NOT the sender)
         # This fetches sent amounts of open transactions (to avoid double spending)
         open_tx_sender = [tx.amount
                           for tx in self.__open_transactions if tx.sender == participant]
+
         tx_sender.append(open_tx_sender)
-        print(tx_sender)
+        # if (len(tx_sender[-2]) > 0) and (len(tx_sender)> 3) :
+        #     print('$ Sent   :', tx_sender[-2])
+
         amount_sent = reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt)
                              if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
         # This fetches received coin amounts of transactions that were already included in blocks of the blockchain
