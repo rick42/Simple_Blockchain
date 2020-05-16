@@ -2,6 +2,8 @@ import os
 import node
 import threading
 import requests
+import time
+from miner import Miner
 
 def make_miner(port):
     os.system("python node.py --port {}".format(port))
@@ -17,18 +19,35 @@ def shutdown_miner(port):
         pass
 
 if __name__ == '__main__':
-    threads = list()
-
+    miners = []
     for i in range(2):
-        x = threading.Thread(target=make_miner, args=(5000+i,))
-        threads.append(x)
-        x.start()
+        miners.append(Miner(5000+i,2**i))
+        #miners[i].create_node()
+        miners[i].node_thread.start()
 
-    input('Press Enter to shutdown node localhost:5000')
+    time.sleep(5)
+    input('Press Enter to shutdown the nodes')
 
-    shutdown_miner(5000)
+    for miner in miners:
+        miner.shutdown_node()
+    
+    input('Check if nodes shutdown successfully, then press enter')
 
-    input('Press Enter again to end script')
+
+
+# if __name__ == '__main__':
+#     threads = list()
+
+#     for i in range(2):
+#         x = threading.Thread(target=make_miner, args=(5000+i,))
+#         threads.append(x)
+#         x.start()
+
+#     input('Press Enter to shutdown node localhost:5000')
+
+#     shutdown_miner(5000)
+
+#     input('Press Enter again to end script')
 
     
-    print('THREADS CREATED!!')
+#     print('THREADS CREATED!!')
