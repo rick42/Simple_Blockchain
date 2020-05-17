@@ -23,13 +23,6 @@ if __name__ == '__main__':
     for i in range(1):
         #miners.append(Miner(5000+i,2**i))
         miners.append(Miner(5000+i,2))
-        miners[i].setup_node()
-        #miners[i].node_thread.start()
-
-    input('Press Enter to mine')
-    
-    for miner in miners:
-        miner.start_mining()
 
     time.sleep(5)
     input('Press Enter to shutdown the nodes')

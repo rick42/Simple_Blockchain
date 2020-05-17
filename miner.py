@@ -9,6 +9,7 @@ class Miner:
         self.node_thread = threading.Thread(target=self.start_server)
         self.mining_thread = threading.Thread(target=self.mine)
         self.continue_mining = False
+        self.setup_node()
         print('MINER CREATED: port={}  hashrate={}'.format(port, hash_rate))
 
     def mine(self):
@@ -30,7 +31,6 @@ class Miner:
     def stop_mining(self):
         ''' This method signals the miner to stop mining '''
         self.continue_mining = False
-
     
     def start_server(self):
         ''' Target function of self.node_thread, it starts up a flask server for the miner '''
