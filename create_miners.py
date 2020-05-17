@@ -25,6 +25,17 @@ if __name__ == '__main__':
         miners.append(Miner(5000+i,2))
 
     time.sleep(5)
+
+    input('Press Enter to stop mining')
+
+    for miner in miners:
+        miner.stop_mining()
+
+    input('Press Enter to resume mining')
+
+    for miner in miners:
+        miner.start_mining()
+
     input('Press Enter to shutdown the nodes')
 
     for miner in miners:

@@ -31,6 +31,16 @@ class Miner:
     def stop_mining(self):
         ''' This method signals the miner to stop mining '''
         self.continue_mining = False
+        url = 'http://localhost:{}/halt_mining'.format(self.port)
+        try:
+            response = requests.post(url)
+        except requests.exceptions.ConnectionError:
+            print('Unable to halt mining',self.port)
+            self.continue_mining = False
+        self.mining_thread.join()
+        # Reset self.mining_thread
+        self.mining_thread = threading.Thread(target=self.mine)
+        print('Miner {} stopped mining'.format(self.port))
     
     def start_server(self):
         ''' Target function of self.node_thread, it starts up a flask server for the miner '''

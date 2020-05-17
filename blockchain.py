@@ -43,6 +43,7 @@ class Blockchain:
         self.load_data()
         self.hash_rate = hash_rate
         self.is_mining = False
+        self.halt_mining = False
 
     # This turns the chain attribute into a property with a getter (the method below) and a setter (@chain.setter)
     @property
@@ -123,6 +124,10 @@ class Blockchain:
             print('NODE {}: noonce = '.format(self.node_id), proof)
             if self.hash_rate != None:
                 time.sleep(1/self.hash_rate)
+            if self.halt_mining == True:
+                self.halt_mining = False
+                print('Mining Halted')
+                return None, None
             proof += 1
         print('Proof    :', proof)
 
@@ -212,12 +217,16 @@ class Blockchain:
 
         # Fetch the currently last block of the blockchain
         if self.public_key == None:
+            self.is_mining = False
             return None
         last_block = self.__chain[-1]
         # Hash the last block (=> to be able to compare it to the stored hash value)
         hashed_block = hash_block(last_block)
 
         proof, bits = self.proof_of_work()
+        if proof == None:
+            self.is_mining = False
+            return None
         # Miners should be rewarded, so let's create a reward transaction
         # reward_transaction = {
         #     'sender': 'MINING',
@@ -231,6 +240,7 @@ class Blockchain:
         copied_transactions = self.__open_transactions[:]
         for tx in copied_transactions:
             if not Wallet.verify_transaction(tx):
+                self.is_mining = False
                 return None
         copied_transactions.append(reward_transaction)
 

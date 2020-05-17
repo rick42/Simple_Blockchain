@@ -138,6 +138,15 @@ def broadcast_block():
         return jsonify(response), 409
 
 
+@app.route('/halt_mining', methods=['POST'])
+def halt_mining():
+    blockchain.halt_mining = True
+    response = {
+        'message': 'blockchain.halt_mining set to True'
+    }
+    return jsonify(response), 200
+
+
 @app.route('/test_resolve', methods=['POST'])
 def test_resolve():
     ''' This route is for testing purposes '''
@@ -198,7 +207,7 @@ def mine():
         return jsonify(response), 409
     if blockchain.is_mining:
         response = {'message': 'Mining already in progress, block not added!'}
-        return jsonify(response), 409
+        return jsonify(response), 400
     block = blockchain.mine_block()
     if block != None:
         dict_block = block.__dict__.copy()
