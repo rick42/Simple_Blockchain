@@ -32,7 +32,7 @@ class Difficulty:
         difficulty =  genesis_target / float(target)
         return difficulty
 
-    def update_difficulty(Blockchain, block, blocks_to_update = 5, desired_time_block = 10.0 ):
+    def update_difficulty(Blockchain, block, blocks_to_update = 10, desired_time_block = 10.0 ):
         """Updates the difficulty every x blocks by averaging
             past block mining time and comparing to desired time
             desired_time: Desired time in seconds to mine a block
