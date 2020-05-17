@@ -12,6 +12,7 @@ class Miner:
         self.setup_node()
         print('MINER CREATED: port={}  hashrate={}'.format(port, hash_rate))
 
+
     def mine(self):
         ''' Target function of self.mining_thread, it automamically mines blocks
         until it is signalled to stop '''
@@ -24,10 +25,12 @@ class Miner:
                 print('MINING FAILED: Unable to connect to server ',self.port)
                 self.continue_mining = False
     
+
     def start_mining(self):
         ''' Start the thread for automatic mining '''
         self.mining_thread.start()
     
+
     def stop_mining(self):
         ''' This method signals the miner to stop mining '''
         self.continue_mining = False
@@ -42,9 +45,29 @@ class Miner:
         self.mining_thread = threading.Thread(target=self.mine)
         print('Miner {} stopped mining'.format(self.port))
     
+
     def start_server(self):
         ''' Target function of self.node_thread, it starts up a flask server for the miner '''
         os.system("python node.py --port {} --hashrate {}".format(self.port,self.hash_rate))
+
+    
+    def establish_network(self,miner_list):
+        ''' Create a two way connection with each miner in miner_list '''
+        for miner in miner_list:
+            self.add_peer_node(miner.port)
+            miner.add_peer_node(self.port)
+
+
+    def add_peer_node(self, peer_port):
+        ''' Add peer_port to the miner's list of peers '''
+        if peer_port == self.port:
+            return
+        url = 'http://localhost:{}/node'.format(self.port)
+        try:
+            response = requests.post(url, json={'node': 'localhost:{}'.format(peer_port)})
+        except requests.exceptions.ConnectionError:
+            print('Failed to add peer node')
+
     
     def setup_node(self):
         ''' Start the thread for the flask server and sets it up '''
@@ -66,9 +89,10 @@ class Miner:
             response = requests.post(url)
         except requests.exceptions.ConnectionError:
             print('Miner failed to load wallet')
-        
-        self.mining_thread.start()
 
+        
+        
+        #self.mining_thread.start()
 
 
     def shutdown_node(self):
