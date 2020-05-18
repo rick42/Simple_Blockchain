@@ -33,7 +33,7 @@ def create_keys():
     wallet.create_keys()
     if wallet.save_keys():
         global blockchain
-        blockchain = Blockchain(wallet.public_key, port, hash_rate)
+        blockchain = Blockchain(wallet.public_key, port, blocks_to_update, time_per_block, hash_rate)
         response = {
             'public_key': wallet.public_key,
             'private_key': wallet.private_key,
@@ -51,7 +51,7 @@ def create_keys():
 def load_keys():
     if wallet.load_keys():
         global blockchain
-        blockchain = Blockchain(wallet.public_key, port, hash_rate)
+        blockchain = Blockchain(wallet.public_key, port, blocks_to_update, time_per_block, hash_rate)
         response = {
             'public_key': wallet.public_key,
             'private_key': wallet.private_key,
@@ -199,6 +199,7 @@ def mine():
     if blockchain.is_mining:
         response = {'message': 'Mining already in progress, block not added!'}
         return jsonify(response), 409
+
     block = blockchain.mine_block()
     if block != None:
         dict_block = block.__dict__.copy()
@@ -296,10 +297,20 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-p', '--port', type=int, default=5000)
     parser.add_argument('-r', '--hashrate', type=int)
+    
+    parser.add_argument('-t', '--avgtime', type=int, default=10)
+    parser.add_argument('-b', '--difficulty_update', type=int, default=5)
+    
     args = parser.parse_args()
     port = args.port
     hash_rate = args.hashrate
     wallet = Wallet(port)
-    blockchain = Blockchain(wallet.public_key, port)
-    blockchain.hash_rate = hash_rate
+    time_per_block = args.avgtime
+    blocks_to_update = args.difficulty_update
+
+    blockchain = Blockchain(wallet.public_key, port, blocks_to_update, time_per_block)
+   # blockchain.hash_rate = hash_rate
+    # blockchain.blocks_to_update= blocks_to_update
+    # blockchain.time_per_block  = time_per_block
+ 
     app.run(host='0.0.0.0', port=port)

@@ -13,7 +13,9 @@ class Verification:
         Arguments:
             :transactions: The transactions of the block for which the proof is created.
             :last_hash: The previous block's hash which will be stored in the current block.
-            :proof: The proof number we're testing.
+            :proof: The proof is the nounce that is added to the transactions &  previous_hash
+                    strings then hashed to create a guess_target.
+            :bits: a decimal number which dictates difficulty
         """
         # Create a string with all the hash inputs
         guess = (str([tx.to_ordered_dict() for tx in transactions]) + str(last_hash) + str(proof)).encode()

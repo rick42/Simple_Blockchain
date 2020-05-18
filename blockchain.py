@@ -28,10 +28,10 @@ class Blockchain:
         :hosting_node: The connected node (which runs the blockchain).
     """
 
-    def __init__(self, public_key, node_id, hash_rate=None):
+    def __init__(self, public_key, node_id, blocks_to_update, time_per_block, hash_rate =None):
         """The constructor of the Blockchain class."""
-        # Our starting genesis block for the blockchain, bits=0x20800000
-        genesis_block = Block(0, '', [], 100, '0x20800000' )
+        # Our starting genesis block for the blockchain, bits=0x20700000
+        genesis_block = Block(0, '', [], 100, '0x20700000' )
         # Initializing our (empty) blockchain list
         self.chain = [genesis_block]
         # Unhandled transactions
@@ -43,7 +43,9 @@ class Blockchain:
         self.load_data()
         self.hash_rate = hash_rate
         self.is_mining = False
-
+        self.blocks_to_update = blocks_to_update
+        self.time_per_block = time_per_block
+ 
     # This turns the chain attribute into a property with a getter (the method below) and a setter (@chain.setter)
     @property
     def chain(self):
@@ -115,7 +117,8 @@ class Blockchain:
         """Generate a proof of work for the open transactions, the hash of the previous block and a random number (which is guessed until it fits)."""
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
-        bits = Difficulty.update_difficulty(self.__chain, last_block)
+
+        bits = Difficulty.update_difficulty(self.__chain, last_block, self.blocks_to_update, self.time_per_block )
         proof = 0
 
         # Try different PoW numbers and return the first valid one
