@@ -22,7 +22,7 @@
             </div>
 
             <div class="row">
-                <div class="col">
+                <div class="col mb-0">
                     <ul class="nav nav-pills">
                         <li class="nav-item">
                             <a class="nav-link" href="/">Wallet &amp; Node</a>
@@ -42,48 +42,47 @@
             <div v-if="success" class="alert alert-success" role="alert">
                 {{ success }}
             </div>
-                <ul class="nav nav-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link" :class="{active: view === 'Block Rate'}" href="#" @click="view = 'rate'">Block Rate</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" :class="{active: view === 'Average Time'}" href="#" @click="view = 'time'">Average Time</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" :class="{active: view === 'Difficulty'}" href="#" @click="view = 'Difficulty'">Difficulty</a>
-                    </li>
-                </ul>
-            <!-- <div v-if="!stats" class="row ">
-                <div class="col">
-                    <div class="alert alert-warning">Click Load to Import BlockChain Data!</div>
-                </div>
-            </div> 
-            
-                <div class="row mb-2">
-                <div class="col">
-                    <div v-if="!statsLoading">
-                        <button class="btn btn-primary" @click="onLoadStats">
-                            Load Statistics
-                        </button>
-                    </div>
+            <div>
 
 
-                    <div v-if="statsLoading" class="lds-ring">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
-                </div>
-            </div> -->
-            <div class="row">
-                <div class="col-12">
-                    <div v-if="view === 'Block Rate'" class="card-header"></div>
-                        <div class="card">
-                            <canvas id="canvas1"></canvas>
-                        </div>
+            <div class="row ">
+                <div class="col">
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item">                            
+                            <a class="nav-link" :class="{active: view1 === 'Hash Rate'}"  href="#" @click="view1 = 'Hash Rate'">Hash Rate</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" :class="{active: view1 === 'Average Time'}" href="#" @click="view1 = 'Average Time'">Average Time</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" :class="{active: view1 === 'Difficulty'}" href="#" @click="view1 = 'Difficulty'">Difficulty</a>
+                        </li>
+                    </ul>
                 </div>
             </div>
+
+
+            
+                <div class="col-header">
+                        <div v-if="view1 === 'Hash Rate'" class="card-header ">
+                            <div class="card -blank 0">
+                                <canvas id="canvas_hr"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div v-if="view1 === 'Average Time'" class="card-header">
+                            <div class="card -blank 0">
+                            <canvas id="canvas_avg"></canvas>
+                            </div>
+                        </div>
+
+                        <div v-if="view1 === 'Difficulty'" class="card-header">
+                            <div class="card -blank 0">
+                                <canvas id="canvas_dif"></canvas>
+                            </div>
+                        </div>
+                </div>
+            
 
             <hr>
             <div class="row">
@@ -182,13 +181,13 @@
                 openTransactions: [],
                 stats: null,
                 view: 'chain',
+                view1:'Hash Rate',
                 statsLoading: false,
                 txLoading: false,
                 dataLoading: false,
                 showElement: null,
                 error: null,
                 success: null,
-
             },
 
             computed: {
@@ -202,39 +201,6 @@
             },
 
             methods: {
-            //     onCreateWallet: function () {
-            //         // Send Http request to create a new wallet (and return keys)
-            //         var vm = this;
-            //         this.statsLoading = true
-            //         axios.post('/wallet')
-            //             .then(function (response) {
-            //                 vm.error = null;
-            //                 vm.success = 'Created Wallet! Public Key: ' + response.data.public_key + ', Private Key: ' + response.data.private_key;
-
-            //                 vm.statsLoading = false
-            //             })
-            //             .catch(function (error) {
-            //                 vm.success = null;
-            //                 vm.error = error.response.data.message
-            //                 vm.wallet = null
-            //                 vm.statsLoading = false
-            //             });
-            //     },
-               
-                // onMine: function () {
-                //     var vm = this
-                //     axios.post('/mine')
-                //         .then(function(response) {
-                //             vm.error = null;
-                //             vm.success = response.data.message;
-                //             console.log(response.data);
-                //             vm.funds = response.data.funds;
-                //         })
-                //         .catch(function (error) {
-                //             vm.success = null;
-                //             vm.error = error.response.data.message;
-                //         });
-                // },
                 onResolve: function() {
                     var vm = this
                     axios.post('/resolve-conflicts')
@@ -280,13 +246,8 @@
         });
 
         $(document).ready(function () {
-            // var vm = this;
-            // this.statsLoading = true
-            //     // axios.post('/stats')
-            //     //     .then(function (response) {
-            //         vm.error = null;
-            //         vm.success = 'Graph Successfully Loaded ';
-            const config = {
+
+            const config_hr = {
                 type: 'line',
                 data: {
                     labels: [],
@@ -294,6 +255,7 @@
                         label: 'Blocks Mined',
                         backgroundColor: 'rgb(255, 99, 132)',
                         borderColor: 'rgb(255, 99, 132)',
+                        radius: 0, 
                         data: [],
                         fill: false,
                     }],
@@ -328,35 +290,94 @@
                             },
                         
                             ticks: {
-                                stepSize: 1
+                                precision: 0
                             }
                         
                         }]
                     }
                 }
             };
-            const context = document.getElementById('canvas1').getContext('2d');
-            const lineChart = new Chart(context, config);
-            const source = new EventSource("/chart-data");
+            const context = document.getElementById('canvas_hr').getContext('2d');
+            const lineChart = new Chart(context, config_hr);
+            const source = new EventSource("/chart-data-hr");
 
             source.onmessage = function (event) {
                 const data = JSON.parse(event.data);
-                if (config.data.labels.length === 100) {
-                    config.data.labels.shift();
-                    config.data.datasets[0].data.shift();
+                if (config_hr.data.labels.length === 250) {
+                    config_hr.data.labels.shift();
+                    config_hr.data.datasets[0].data.shift();
                 }
-                config.data.labels.push(data.time);
-                config.data.datasets[0].data.push(data.value);
+                config_hr.data.labels.push(data.time);
+                config_hr.data.datasets[0].data.push(data.value);
                 lineChart.update();
             }
-            // })
-            // .catch(function (error) {
-            //     vm.success = null;
-            //     vm.error = error.response.data.message;
-            //     vm.stats = null;
-            //     vm.statsLoading = false;
-            // });
+
+                // const config_avg = {
+                //     type: 'line',
+                //     data: {
+                //         labels: [],
+                //         datasets: [{
+                //             label: 'Blocks Mined',
+                //             backgroundColor: 'rgb(255, 99, 132)',
+                //             borderColor: 'rgb(255, 99, 132)',
+                //             radius: 0, 
+                //             data: [],
+                //             fill: false,
+                //         }],
+                //     },
+                //     options: {
+                //         responsive: true,
+                //         title: {
+                //             display: true,
+                //             text: 'Blocks Mined Over Time'
+                //         },
+                //         tooltips: {
+                //             mode: 'index',
+                //             intersect: false,
+                //         },
+                //         hover: {
+                //             mode: 'nearest',
+                //             intersect: true
+                //         },
+                //         scales: {
+                //             xAxes: [{
+                //                 display: true,
+                //                 scaleLabel: {
+                //                     display: true,
+                //                     labelString: 'Time'
+                //                 }
+                //             }],
+                //             yAxes: [{
+                //                 display: true,
+                //                 scaleLabel: {
+                //                     display: true,
+                //                     labelString: 'Average Time'
+                //                 },
+                            
+                //                 ticks: {
+                //                     precision: 1
+                //                 }
+                            
+                //             }]
+                //         }
+                //     }
+                // };
+                // const context = document.getElementById('canvas_avg').getContext('2d');
+                // const lineChart = new Chart(context, config_avg);
+                // const source = new EventSource("/Average-Time");
+
+                // source.onmessage = function (event) {
+                //     const data = JSON.parse(event.data);
+                //     if (config_avg.data.labels.length === 200) {
+                //         config_avg.data.labels.shift();
+                //         config_avg.data.datasets[0].data.shift();
+                //     }
+                //     config_avg.data.labels.push(data.time);
+                //     config_avg.data.datasets[0].data.push(data.value);
+                //     lineChart.update();
+                // }
         });
+    
 
     </script>
 </body>

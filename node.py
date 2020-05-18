@@ -35,26 +35,52 @@ def get_network_ui():
 def get_statistic_ui():
     return send_from_directory('ui', 'statistics.html')
 
-@app.route('/chart-data')
+@app.route('/chart-data-hr')
 def chart_data():
     def generate_data():
         while True: 
-            # print(blockchain.chain[-1].timestamp)
-            # print(datetime.fromtimestamp(blockchain.chain[-1].timestamp))     
-            # print(datetime.fromtimestamp(blockchain.chain[-1].timestamp).strftime('%H:%M:%S'))  
-            # time_array= [datetime.fromtimestamp(bloc.timestamp).strftime('%H:%M:%S') for bloc in blockchain.chain] 
-            # indexes = [bloc.index for bloc in blockchain.chain] 
-            # # print(len(time_array),  len(blockchain.chain.index))
-            # print(time_array[-5:-1],  indexes[-5:-1])
             json_data = json.dumps({
                 'time':  datetime.now().strftime('%H:%M:%S'),
                 'value': blockchain.chain[-1].index
             })
-            
+
             yield f"data:{json_data}\n\n"
             time.sleep(1)
 
     return Response(generate_data(), mimetype='text/event-stream')
+
+# @app.route('/Average-Time')
+# def chart_data():
+#     def generate_data():
+#         blocks_to_update = blockchain.blocks_to_update
+
+#         while True: 
+#             if blockchain.chain[-1].index  == (blocks_to_update - 1 ):
+#                 first_block_secs = blockchain.chain[-1 * blocks_to_update ].timestamp
+#                 last_block_secs = blockchain.chain[-1].timestamp 
+#                 time_span_secs = last_block_secs - first_block_secs 
+#                 avg_time_block= time_span_secs / (blocks_to_update - 1)
+#                 json_data = json.dumps({
+#                     'time':  datetime.now().strftime('%H:%M:%S'),
+#                     'value': avg_time_block
+#                 })
+#                 yield f"data:{json_data}\n\n"
+            
+#             elif ((blockchain.chain[-1].index + 1) %  blocks_to_update) == 0:
+#                 first_block_secs = blockchain.chain[-1 * (blocks_to_update + 1)].timestamp
+#                 last_block_secs = blockchain.chain[-1].timestamp 
+#                 time_span_secs = last_block_secs - first_block_secs
+#                 avg_time_block= time_span_secs / blocks_to_update
+#                 print(avg_time_block)
+
+#                 json_data = json.dumps({
+#                     'time':  datetime.now().strftime('%H:%M:%S'),
+#                     'value': avg_time_block
+#                 })
+#                 yield f"data:{json_data}\n\n"
+#             time.sleep(2)
+
+#     return Response(generate_data(), mimetype='text/event-stream')
 
 @app.route('/wallet', methods=['POST'])
 def create_keys():
