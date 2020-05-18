@@ -3,13 +3,16 @@ import requests
 import threading
 
 class Miner:
-    def __init__(self, port, hash_rate=None):
+    def __init__(self, port, hash_rate=None, miner_list=None):
         self.port = port
         self.hash_rate = hash_rate
         self.node_thread = threading.Thread(target=self.start_server)
         self.mining_thread = threading.Thread(target=self.mine)
         self.continue_mining = False
         self.setup_node()
+        if miner_list != None:
+            self.establish_network(miner_list)
+            self.start_mining()
         print('MINER CREATED: port={}  hashrate={}'.format(port, hash_rate))
 
 
