@@ -1,6 +1,7 @@
 from functools import reduce
 import hashlib as hl
 import time
+import random
 
 import json
 import pickle
@@ -117,7 +118,8 @@ class Blockchain:
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
         bits = Difficulty.update_difficulty(self.__chain, last_block)
-        proof = 0
+        #proof = 0
+        proof = random.randint(0,1_000_000_000)
 
         # Try different PoW numbers and return the first valid one
         while not Verification.valid_proof(self.__open_transactions, hashed_block, proof, bits):

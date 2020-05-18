@@ -23,6 +23,7 @@ if __name__ == '__main__':
     for i in range(2):
         miner = Miner(5000+i,2**i)
         miner.establish_network(miners)
+        #startmining
         miners.append(miner)
 
     for miner in miners:
