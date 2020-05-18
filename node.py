@@ -151,10 +151,12 @@ def broadcast_block():
         return jsonify(response), 400
     block = values['block']
     if block['index'] == blockchain.chain[-1].index + 1:
-        if blockchain.add_block(block):
+        if blockchain.add_block(block):     
+            blockchain.halt_mining = True
             response = {'message': 'Block added'}
             return jsonify(response), 201
         else:
+            blockchain.resolve_conflicts = True
             response = {'message': 'Block seems invalid.'}
             return jsonify(response), 409
     elif block['index'] > blockchain.chain[-1].index:
@@ -163,7 +165,16 @@ def broadcast_block():
         return jsonify(response), 200
     else: 
         response = {'message': 'Blockchain seems to be shorter, block not added'}
-        return jsonify(response), 409
+        return jsonify(response), 408
+
+
+@app.route('/halt_mining', methods=['POST'])
+def halt_mining():
+    blockchain.halt_mining = True
+    response = {
+        'message': 'blockchain.halt_mining set to True'
+    }
+    return jsonify(response), 200
 
 
 @app.route('/test_resolve', methods=['POST'])
@@ -226,8 +237,7 @@ def mine():
         return jsonify(response), 409
     if blockchain.is_mining:
         response = {'message': 'Mining already in progress, block not added!'}
-        return jsonify(response), 409
-
+        return jsonify(response), 400
     block = blockchain.mine_block()
     if block != None:
         dict_block = block.__dict__.copy()

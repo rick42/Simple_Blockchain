@@ -1,6 +1,7 @@
 from functools import reduce
 import hashlib as hl
 import time
+import random
 
 import json
 import pickle
@@ -30,8 +31,8 @@ class Blockchain:
 
     def __init__(self, public_key, node_id, blocks_to_update, time_per_block, hash_rate =None):
         """The constructor of the Blockchain class."""
-        # Our starting genesis block for the blockchain, bits=0x20700000
-        genesis_block = Block(0, '', [], 100, '0x20700000' )
+        # Our starting genesis block for the blockchain, bits=0x20800000
+        genesis_block = Block(0, '', [], 100, '0x20100000' )
         # Initializing our (empty) blockchain list
         self.chain = [genesis_block]
         # Unhandled transactions
@@ -45,7 +46,8 @@ class Blockchain:
         self.is_mining = False
         self.blocks_to_update = blocks_to_update
         self.time_per_block = time_per_block
- 
+        self.halt_mining = False
+
     # This turns the chain attribute into a property with a getter (the method below) and a setter (@chain.setter)
     @property
     def chain(self):
@@ -117,16 +119,23 @@ class Blockchain:
         """Generate a proof of work for the open transactions, the hash of the previous block and a random number (which is guessed until it fits)."""
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
-
-        bits = Difficulty.update_difficulty(self.__chain, last_block, self.blocks_to_update, self.time_per_block )
-        proof = 0
+        bits = Difficulty.update_difficulty(self.__chain, last_block, self.blocks_to_update, self.time_per_block)
+        proof = random.randint(0,1_000_000_000)
 
         # Try different PoW numbers and return the first valid one
         while not Verification.valid_proof(self.__open_transactions, hashed_block, proof, bits):
+            print('NODE {}: noonce = '.format(self.node_id), proof)
             if self.hash_rate != None:
                 time.sleep(1/self.hash_rate)
+            if self.halt_mining == True:
+                self.halt_mining = False
+                print('Mining Halted')
+                return None, None
+            if self.resolve_conflicts == True:
+                print('Stopped mining: Need to resolve conflicts')
+                return None, None
             proof += 1
-        print('Proof    :', proof)
+        print('NODE {}: Proof = '.format(self.node_id), proof)
 
         return  proof, bits
         
@@ -214,12 +223,16 @@ class Blockchain:
 
         # Fetch the currently last block of the blockchain
         if self.public_key == None:
+            self.is_mining = False
             return None
         last_block = self.__chain[-1]
         # Hash the last block (=> to be able to compare it to the stored hash value)
         hashed_block = hash_block(last_block)
 
         proof, bits = self.proof_of_work()
+        if proof == None:
+            self.is_mining = False
+            return None
         # Miners should be rewarded, so let's create a reward transaction
         # reward_transaction = {
         #     'sender': 'MINING',
@@ -233,6 +246,7 @@ class Blockchain:
         copied_transactions = self.__open_transactions[:]
         for tx in copied_transactions:
             if not Wallet.verify_transaction(tx):
+                self.is_mining = False
                 return None
         copied_transactions.append(reward_transaction)
 
