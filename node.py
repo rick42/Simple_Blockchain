@@ -1,6 +1,11 @@
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
+from flask import Response, render_template
+import json
+from datetime import datetime
+import time
+
 from wallet import Wallet
 from blockchain import Blockchain
 
@@ -22,11 +27,34 @@ def shutdown():
 def get_node_ui():
     return send_from_directory('ui', 'node.html')
 
-
 @app.route('/network', methods=['GET'])
 def get_network_ui():
     return send_from_directory('ui', 'network.html')
 
+@app.route('/statistics', methods=['GET'])
+def get_statistic_ui():
+    return send_from_directory('ui', 'statistics.html')
+
+@app.route('/chart-data')
+def chart_data():
+    def generate_data():
+        while True: 
+            # print(blockchain.chain[-1].timestamp)
+            # print(datetime.fromtimestamp(blockchain.chain[-1].timestamp))     
+            # print(datetime.fromtimestamp(blockchain.chain[-1].timestamp).strftime('%H:%M:%S'))  
+            # time_array= [datetime.fromtimestamp(bloc.timestamp).strftime('%H:%M:%S') for bloc in blockchain.chain] 
+            # indexes = [bloc.index for bloc in blockchain.chain] 
+            # # print(len(time_array),  len(blockchain.chain.index))
+            # print(time_array[-5:-1],  indexes[-5:-1])
+            json_data = json.dumps({
+                'time':  datetime.now().strftime('%H:%M:%S'),
+                'value': blockchain.chain[-1].index
+            })
+            
+            yield f"data:{json_data}\n\n"
+            time.sleep(1)
+
+    return Response(generate_data(), mimetype='text/event-stream')
 
 @app.route('/wallet', methods=['POST'])
 def create_keys():
