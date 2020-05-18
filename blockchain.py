@@ -31,7 +31,7 @@ class Blockchain:
     def __init__(self, public_key, node_id, hash_rate=None):
         """The constructor of the Blockchain class."""
         # Our starting genesis block for the blockchain, bits=0x20800000
-        genesis_block = Block(0, '', [], 100, '0x20800000' )
+        genesis_block = Block(0, '', [], 100, '0x20100000' )
         # Initializing our (empty) blockchain list
         self.chain = [genesis_block]
         # Unhandled transactions
@@ -128,8 +128,11 @@ class Blockchain:
                 self.halt_mining = False
                 print('Mining Halted')
                 return None, None
+            if self.resolve_conflicts == True:
+                print('Stopped mining: Need to resolve conflicts')
+                return None, None
             proof += 1
-        print('Proof    :', proof)
+        print('NODE {}: Proof = '.format(self.node_id), proof)
 
         return  proof, bits
         

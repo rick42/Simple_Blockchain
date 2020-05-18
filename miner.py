@@ -13,18 +13,31 @@ class Miner:
         print('MINER CREATED: port={}  hashrate={}'.format(port, hash_rate))
 
 
+    def resolve_node_conflicts(self):
+        ''' Make a request to update the miner's blockchain to the longest
+        blockchain amongst all nodes in the network '''
+        url = 'http://localhost:{}/resolve-conflicts'.format(self.port)
+        try:
+            response = requests.post(url)
+        except requests.exceptions.ConnectionError:
+            print('Miner unable to resolve conflicts',self.port)
+
+
     def mine(self):
         ''' Target function of self.mining_thread, it automamically mines blocks
         until it is signalled to stop '''
         self.continue_mining = True
         url = 'http://localhost:{}/mine'.format(self.port)
+        self.resolve_node_conflicts()
         while self.continue_mining == True:
             try:
                 response = requests.post(url)
             except requests.exceptions.ConnectionError:
                 print('MINING FAILED: Unable to connect to server ',self.port)
                 self.continue_mining = False
-    
+            if response.status_code != 201:
+                self.resolve_node_conflicts()
+        
 
     def start_mining(self):
         ''' Start the thread for automatic mining '''

@@ -20,12 +20,13 @@ def shutdown_miner(port):
 
 if __name__ == '__main__':
     miners = []
-    for i in range(5):
+    for i in range(2):
         miner = Miner(5000+i,2**i)
         miner.establish_network(miners)
         miners.append(miner)
 
-        #miners.append(Miner(5000+i,2))
+    for miner in miners:
+        miner.start_mining()
 
     time.sleep(5)
 
