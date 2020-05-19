@@ -3,17 +3,19 @@ import requests
 import threading
 
 class Miner:
-    def __init__(self, port, hash_rate=None, miner_list=None):
+    def __init__(self, port, hash_rate=None, miner_list=None, blocks_to_update=5, time_per_block=10):
         self.port = port
         self.hash_rate = hash_rate
         self.node_thread = threading.Thread(target=self.start_server)
         self.mining_thread = threading.Thread(target=self.mine)
         self.continue_mining = False
+        self.blocks_to_update = blocks_to_update
+        self.time_per_block = time_per_block
         self.setup_node()
         if miner_list != None:
             self.establish_network(miner_list)
             self.start_mining()
-        print('MINER CREATED: port={}  hashrate={}'.format(port, hash_rate))
+        print('MINER CREATED: port={}  hashrate={}  blocks_to_update={}  time_per_block={}'.format(port, hash_rate, blocks_to_update, time_per_block))
 
 
     def resolve_node_conflicts(self):
@@ -64,7 +66,7 @@ class Miner:
 
     def start_server(self):
         ''' Target function of self.node_thread, it starts up a flask server for the miner '''
-        os.system("python node.py --port {} --hashrate {}".format(self.port,self.hash_rate))
+        os.system("python node.py --port {} --hashrate {} --avgtime {} --difficulty_update".format(self.port,self.hash_rate,self.time_per_block,self.blocks_to_update))
 
     
     def establish_network(self,miner_list):
