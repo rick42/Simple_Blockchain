@@ -48,12 +48,14 @@
             <div class="row ">
                 <div class="col">
                     <ul class="nav nav-tabs">
-                        <li class="nav-item">                            
-                            <a class="nav-link" :class="{active: view1 === 'Hash Rate'}"  href="#" @click="view1 = 'Hash Rate'">Hash Rate</a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link" :class="{active: view1 === 'Average Time'}" href="#" @click="view1 = 'Average Time'">Average Time</a>
                         </li>
+
+                        <li class="nav-item">                            
+                            <a class="nav-link" :class="{active: view1 === 'Hash Rate'}"  href="#" @click="view1 = 'Hash Rate'">Hash Rate</a>
+                        </li>
+
                         <li class="nav-item">
                             <a class="nav-link" :class="{active: view1 === 'Difficulty'}" href="#" @click="view1 = 'Difficulty'">Difficulty</a>
                         </li>
@@ -181,7 +183,7 @@
                 openTransactions: [],
                 stats: null,
                 view: 'chain',
-                view1:'Hash Rate',
+                view1:'Average Time',
                 statsLoading: false,
                 txLoading: false,
                 dataLoading: false,
@@ -247,135 +249,135 @@
 
         $(document).ready(function () {
 
-            const config_hr = {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Blocks Mined',
-                        backgroundColor: 'rgb(255, 99, 132)',
-                        borderColor: 'rgb(255, 99, 132)',
-                        radius: 0, 
-                        data: [],
-                        fill: false,
-                    }],
-                },
-                options: {
-                    responsive: true,
-                    title: {
-                        display: true,
-                        text: 'Blocks Mined Over Time'
-                    },
-                    tooltips: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    hover: {
-                        mode: 'nearest',
-                        intersect: true
-                    },
-                    scales: {
-                        xAxes: [{
-                            display: true,
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Time'
-                            }
+            // const config_hr = {
+            //     type: 'line',
+            //     data: {
+            //         labels: [],
+            //         datasets: [{
+            //             label: 'Blocks Mined',
+            //             backgroundColor: 'rgb(255, 99, 132)',
+            //             borderColor: 'rgb(255, 99, 132)',
+            //             radius: 0, 
+            //             data: [],
+            //             fill: false,
+            //         }],
+            //     },
+            //     options: {
+            //         responsive: true,
+            //         title: {
+            //             display: true,
+            //             text: 'Blocks Mined Over Time'
+            //         },
+            //         tooltips: {
+            //             mode: 'index',
+            //             intersect: false,
+            //         },
+            //         hover: {
+            //             mode: 'nearest',
+            //             intersect: true
+            //         },
+            //         scales: {
+            //             xAxes: [{
+            //                 display: true,
+            //                 scaleLabel: {
+            //                     display: true,
+            //                     labelString: 'Time'
+            //                 }
+            //             }],
+            //             yAxes: [{
+            //                 display: true,
+            //                 scaleLabel: {
+            //                     display: true,
+            //                     labelString: 'Blocks'
+            //                 },
+                        
+            //                 ticks: {
+            //                     precision: 0
+            //                 }
+                        
+            //             }]
+            //         }
+            //     }
+            // };
+            // const context = document.getElementById('canvas_hr').getContext('2d');
+            // const lineChart = new Chart(context, config_hr);
+            // const source = new EventSource("/chart-data-hr");
+
+            // source.onmessage = function (event) {
+            //     const data = JSON.parse(event.data);
+            //     if (config_hr.data.labels.length === 700) {
+            //         config_hr.data.labels.shift();
+            //         config_hr.data.datasets[0].data.shift();
+            //     }
+            //     config_hr.data.labels.push(data.time);
+            //     config_hr.data.datasets[0].data.push(data.value);
+            //     lineChart.update();
+            // }
+
+                const config_avg = {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Seconds',
+                            backgroundColor: 'rgb(255, 99, 132)',
+                            borderColor: 'rgb(255, 99, 132)',
+                            radius: 1, 
+                            data: [],
+                            fill: false,
                         }],
-                        yAxes: [{
+                    },
+                    options: {
+                        responsive: true,
+                        title: {
                             display: true,
-                            scaleLabel: {
+                            text: 'Average Time Per Block'
+                        },
+                        tooltips: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        hover: {
+                            mode: 'nearest',
+                            intersect: true
+                        },
+                        scales: {
+                            xAxes: [{
                                 display: true,
-                                labelString: 'Blocks'
-                            },
-                        
-                            ticks: {
-                                precision: 0
-                            }
-                        
-                        }]
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Time'
+                                }
+                            }],
+                            yAxes: [{
+                                display: true,
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Average Time'
+                                },
+                            
+                                ticks: {
+                                    precision: 1
+                                }
+                            
+                            }]
+                        }
                     }
+                };
+                const context = document.getElementById('canvas_avg').getContext('2d');
+                const lineChart = new Chart(context, config_avg);
+                const source = new EventSource("/Average-Time");
+
+                source.onmessage = function (event) {
+                    const data = JSON.parse(event.data);
+                    if (config_avg.data.labels.length === 700) {
+                        config_avg.data.labels.shift();
+                        config_avg.data.datasets[0].data.shift();
+                    }
+                    config_avg.data.labels.push(data.time);
+                    config_avg.data.datasets[0].data.push(data.value);
+                    lineChart.update();
                 }
-            };
-            const context = document.getElementById('canvas_hr').getContext('2d');
-            const lineChart = new Chart(context, config_hr);
-            const source = new EventSource("/chart-data-hr");
-
-            source.onmessage = function (event) {
-                const data = JSON.parse(event.data);
-                if (config_hr.data.labels.length === 250) {
-                    config_hr.data.labels.shift();
-                    config_hr.data.datasets[0].data.shift();
-                }
-                config_hr.data.labels.push(data.time);
-                config_hr.data.datasets[0].data.push(data.value);
-                lineChart.update();
-            }
-
-                // const config_avg = {
-                //     type: 'line',
-                //     data: {
-                //         labels: [],
-                //         datasets: [{
-                //             label: 'Blocks Mined',
-                //             backgroundColor: 'rgb(255, 99, 132)',
-                //             borderColor: 'rgb(255, 99, 132)',
-                //             radius: 0, 
-                //             data: [],
-                //             fill: false,
-                //         }],
-                //     },
-                //     options: {
-                //         responsive: true,
-                //         title: {
-                //             display: true,
-                //             text: 'Blocks Mined Over Time'
-                //         },
-                //         tooltips: {
-                //             mode: 'index',
-                //             intersect: false,
-                //         },
-                //         hover: {
-                //             mode: 'nearest',
-                //             intersect: true
-                //         },
-                //         scales: {
-                //             xAxes: [{
-                //                 display: true,
-                //                 scaleLabel: {
-                //                     display: true,
-                //                     labelString: 'Time'
-                //                 }
-                //             }],
-                //             yAxes: [{
-                //                 display: true,
-                //                 scaleLabel: {
-                //                     display: true,
-                //                     labelString: 'Average Time'
-                //                 },
-                            
-                //                 ticks: {
-                //                     precision: 1
-                //                 }
-                            
-                //             }]
-                //         }
-                //     }
-                // };
-                // const context = document.getElementById('canvas_avg').getContext('2d');
-                // const lineChart = new Chart(context, config_avg);
-                // const source = new EventSource("/Average-Time");
-
-                // source.onmessage = function (event) {
-                //     const data = JSON.parse(event.data);
-                //     if (config_avg.data.labels.length === 200) {
-                //         config_avg.data.labels.shift();
-                //         config_avg.data.datasets[0].data.shift();
-                //     }
-                //     config_avg.data.labels.push(data.time);
-                //     config_avg.data.datasets[0].data.push(data.value);
-                //     lineChart.update();
-                // }
         });
     
 
