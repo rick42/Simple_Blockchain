@@ -9,9 +9,24 @@ import time
 from wallet import Wallet
 from blockchain import Blockchain
 
+# create a new flask app for our blockchain node
 app = Flask(__name__)
 CORS(app)
 
+
+@app.route('/', methods=['GET'])
+def get_node_ui():
+    return send_from_directory('ui', 'node.html')
+
+
+@app.route('/network', methods=['GET'])
+def get_network_ui():
+    return send_from_directory('ui', 'network.html')
+
+
+@app.route('/statistics', methods=['GET'])
+def get_statistic_ui():
+    return send_from_directory('ui', 'statistics.html')
 
 
 @app.route('/shutdown', methods=['POST'])
@@ -23,17 +38,6 @@ def shutdown():
     func()
     return 'Server shutting down...'
 
-@app.route('/', methods=['GET'])
-def get_node_ui():
-    return send_from_directory('ui', 'node.html')
-
-@app.route('/network', methods=['GET'])
-def get_network_ui():
-    return send_from_directory('ui', 'network.html')
-
-@app.route('/statistics', methods=['GET'])
-def get_statistic_ui():
-    return send_from_directory('ui', 'statistics.html')
 
 # @app.route('/chart-data-hr')
 # def chart_data():
@@ -49,22 +53,10 @@ def get_statistic_ui():
 
 #     return Response(generate_data(), mimetype='text/event-stream')
 
-# @app.route('/chart-data-hr')
-# def chart_data():
-#     def generate_data():
-#         while True: 
-#             json_data = json.dumps({
-#                 'time':  datetime.now().strftime('%H:%M:%S'),
-#                 'value': blockchain.chain[-1].bits
-#             })
-
-#             yield f"data:{json_data}\n\n"
-#             time.sleep(1)
-
-# return Response(generate_data(), mimetype='text/event-stream')
 
 @app.route('/Average-Time')
 def chart_data():
+    ''' Sends a live data graph displaying the moving average mining time of the last few blocks  '''
     def generate_data():
         blocks_to_update = blockchain.blocks_to_update
 
@@ -74,13 +66,12 @@ def chart_data():
                 last_block_secs = blockchain.chain[-1].timestamp 
                 time_span_secs = last_block_secs - first_block_secs 
                 avg_time_block= time_span_secs / (blocks_to_update - 1)
+
                 json_data = json.dumps({
                     'time':  datetime.now().strftime('%H:%M:%S'),
                     'value': avg_time_block
                 })
                 yield f"data:{json_data}\n\n"
-            
-            # elif ((blockchain.chain[-1].index + 1) %  blocks_to_update) == 0:
             elif ((blockchain.chain[-1].index + 1) >=  blocks_to_update):
                 first_block_secs = blockchain.chain[-1 * (blocks_to_update + 1)].timestamp
                 last_block_secs = blockchain.chain[-1].timestamp 
@@ -95,6 +86,7 @@ def chart_data():
             time.sleep(1)
 
     return Response(generate_data(), mimetype='text/event-stream')
+
 
 @app.route('/wallet', methods=['POST'])
 def create_keys():
@@ -375,7 +367,6 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-p', '--port', type=int, default=5000)
     parser.add_argument('-r', '--hashrate', type=int)
-    
     parser.add_argument('-t', '--avgtime', type=int, default=10)
     parser.add_argument('-b', '--difficulty_update', type=int, default=5)
     
@@ -387,8 +378,5 @@ if __name__ == '__main__':
     blocks_to_update = args.difficulty_update
 
     blockchain = Blockchain(wallet.public_key, port, blocks_to_update, time_per_block)
-   # blockchain.hash_rate = hash_rate
-    # blockchain.blocks_to_update= blocks_to_update
-    # blockchain.time_per_block  = time_per_block
  
     app.run(host='0.0.0.0', port=port)

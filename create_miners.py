@@ -5,65 +5,30 @@ import requests
 import time
 from miner import Miner
 
-def make_miner(port):
-    os.system("python node.py --port {}".format(port))
-
-def shutdown_miner(port):
-    url = 'http://localhost:{}/shutdown'.format(port)
-    try:
-        response = requests.post(url)
-        # if response.status_code == 400 or response.status_code == 500:
-        #     print('Transaction declined, needs resolving')
-        #     return False
-    except requests.exceptions.ConnectionError:
-        pass
 
 if __name__ == '__main__':
     miners = []
-    for i in range(3):
-        input('Press enter to add node #{}'.format(i))
-        miner = Miner(5000+i,2**i,miners)
-        #miner.establish_network(miners)
-        #startmining
-        miners.append(miner)
+    blocks_to_update = 5
+    time_per_block = 10
 
-    # for miner in miners:
-    #     miner.start_mining()
+    while True:
+        hashrate = input('Type a number to create a miner with the given hashrate: ')
+        try:
+            # Check if user input is an integer
+            hashrate = int(hashrate)
+        except ValueError:
+            print('INPUT ERROR: Hashrate must be an integer')
+            # Go back to the start of the while loop if invalid input
+            continue
 
-    time.sleep(5)
-
-    input('Press Enter to stop mining')
-
-    for miner in miners:
-        miner.stop_mining()
-
-    input('Press Enter to resume mining')
-
-    for miner in miners:
-        miner.start_mining()
-
-    input('Press Enter to shutdown the nodes')
-
-    for miner in miners:
-        miner.shutdown_node()
-    
-    input('Check if nodes shutdown successfully, then press enter')
-
-
-
-# if __name__ == '__main__':
-#     threads = list()
-
-#     for i in range(2):
-#         x = threading.Thread(target=make_miner, args=(5000+i,))
-#         threads.append(x)
-#         x.start()
-
-#     input('Press Enter to shutdown node localhost:5000')
-
-#     shutdown_miner(5000)
-
-#     input('Press Enter again to end script')
-
-    
-#     print('THREADS CREATED!!')
+        if hashrate > 0:
+            # If user inputs a positive hashrate, create a new miner with the given hashrate
+            miner = Miner(5000+len(miners),hashrate,miners,blocks_to_update,time_per_block)
+            miners.append(miner)
+            print('MINER {} ADDED'.format(len(miners)-1))
+        else:
+            # If user inputs a non-positive hashrate, pause the last miner in the list
+            miners[-1].stop_mining()
+            # User can press enter to make the last miner resume mining
+            input('Miner {} Stopped Mining, Press Enter to resume: '.format(len(miners)-1))
+            miners[-1].start_mining()

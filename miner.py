@@ -3,7 +3,20 @@ import requests
 import threading
 
 class Miner:
+    """ The Miner class used for creating blockchain nodes and automatic mining.
+
+    Attributes:
+        :port: The port of the miner's node.
+        :hash_rate: The speed the miner will mine.
+        :node_thread: The thread for running node server.
+        :mining_thread: The tread for automatic mining.
+        :continue_mining: Flag used to control automatic mining.
+        :blocks_to_update: Amount of blocks between difficulty updates.
+        :time_per_block: The desired time to mine a block.
+    """
+
     def __init__(self, port, hash_rate=None, miner_list=None, blocks_to_update=5, time_per_block=10):
+        ''' CONSTRUCTOR '''
         self.port = port
         self.hash_rate = hash_rate
         self.node_thread = threading.Thread(target=self.start_server)
@@ -13,9 +26,11 @@ class Miner:
         self.time_per_block = time_per_block
         self.setup_node()
         if miner_list != None:
+            # Add the miner node to the node network and start mining
             self.establish_network(miner_list)
             self.start_mining()
-        print('MINER CREATED: port={}  hashrate={}  blocks_to_update={}  time_per_block={}'.format(port, hash_rate, blocks_to_update, time_per_block))
+        print('MINER CREATED: port={}  hashrate={}  blocks_to_update={}  time_per_block={}'.format(port, 
+                                                                hash_rate, blocks_to_update, time_per_block))
 
 
     def resolve_node_conflicts(self):
@@ -66,7 +81,8 @@ class Miner:
 
     def start_server(self):
         ''' Target function of self.node_thread, it starts up a flask server for the miner '''
-        os.system("python node.py --port {} --hashrate {} --avgtime {} --difficulty_update".format(self.port,self.hash_rate,self.time_per_block,self.blocks_to_update))
+        os.system("python node.py --port {} --hashrate {} --avgtime {} --difficulty_update {}".format(self.port,
+                                                        self.hash_rate,self.time_per_block,self.blocks_to_update))
 
     
     def establish_network(self,miner_list):
@@ -107,10 +123,6 @@ class Miner:
             response = requests.post(url)
         except requests.exceptions.ConnectionError:
             print('Miner failed to load wallet')
-
-        
-        
-        #self.mining_thread.start()
 
 
     def shutdown_node(self):

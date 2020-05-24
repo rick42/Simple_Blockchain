@@ -124,7 +124,7 @@ class Blockchain:
 
         # Try different PoW numbers and return the first valid one
         while not Verification.valid_proof(self.__open_transactions, hashed_block, proof, bits):
-            print('NODE {}: nonce = '.format(self.node_id), proof)
+            #print('NODE {}: nonce = '.format(self.node_id), proof)
             if self.hash_rate != None:
                 time.sleep(1/self.hash_rate)
             if self.halt_mining == True:
@@ -135,7 +135,8 @@ class Blockchain:
                 print('Stopped mining: Need to resolve conflicts')
                 return None, None
             proof += 1
-        print('NODE {}: Proof = '.format(self.node_id), proof)
+        #print('NODE {}: Proof = '.format(self.node_id), proof)
+        print('MINER {}: SUCCESSFULLY MINED BLOCK #{}   (proof={})'.format(self.node_id-5000,last_block.index+1,proof))
 
         return  proof, bits
         

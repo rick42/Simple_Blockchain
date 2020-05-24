@@ -51,7 +51,7 @@ class Difficulty:
 
         bits = block.bits
         target = int(cls.bits_to_target(bits), 16)
-        print('Index    :', (block.index + 1))
+        #print('Index    :', (block.index + 1))
 
         if block.index  == (blocks_to_update - 1 ):
             first_block_secs = Blockchain[-1 * blocks_to_update ].timestamp

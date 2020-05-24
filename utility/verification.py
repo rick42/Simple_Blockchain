@@ -23,10 +23,6 @@ class Verification:
         # IMPORTANT: This is NOT the same hash as will be stored in the previous_hash. It's a not a block's hash. It's only used for the proof-of-work algorithm.
         guess_hash = '0x%s' % hash_string_256(guess)
         # Only a hash (which is based on the above inputs) is less than target is treated as valid
-        # print(guess_hash)
-        # if proof < 1:
-        #     print(Difficulty.bits_to_target(bits))
-        # print(guess_hash < Difficulty.bits_to_target(bits))
         return guess_hash < Difficulty.bits_to_target(bits)
         
     @classmethod
