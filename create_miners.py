@@ -26,9 +26,21 @@ if __name__ == '__main__':
             miner = Miner(5000+len(miners),hashrate,miners,blocks_to_update,time_per_block)
             miners.append(miner)
             print('MINER {} ADDED'.format(len(miners)-1))
-        else:
-            # If user inputs a non-positive hashrate, pause the last miner in the list
+        elif hashrate == 0:
+            # If user inputs a zero, pause the last miner in the list
             miners[-1].stop_mining()
             # User can press enter to make the last miner resume mining
             input('Miner {} Stopped Mining, Press Enter to resume: '.format(len(miners)-1))
             miners[-1].start_mining()
+        else:
+            # If user inputs a negative integer, break out of the while loop
+            break
+    #END OF WHILE LOOP
+
+
+    # Start shutting down all miner nodes
+    for miner in miners:
+        miner.shutdown_node()
+    # Wait for each mining thread to end
+    for miner in miners:
+        miner.mining_thread.join()
